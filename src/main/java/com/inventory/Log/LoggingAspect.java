@@ -19,7 +19,8 @@ public class LoggingAspect {
             "execution(* com.inventory.controller.TransactionController.*(..)) ||" +
             "execution(* com.inventory.service.inventory.InventoryService.*(..)) ||" +
             "execution(* com.inventory.service.transaction.TransactionService.*(..)) ||" +
-            "execution(* com.inventory.service.reservation.ReservationService.*(..)) "
+            "execution(* com.inventory.service.reservation.ReservationService.*(..)) ||"+
+            "execution(* com.inventory.service.redis.RedisService.*(..)) "
           )
     public void logBeforeMethodCall(JoinPoint jp) {
         LOGGER.info("{} Method Called", jp.getSignature().getName());
@@ -30,7 +31,8 @@ public class LoggingAspect {
             "execution(* com.inventory.controller.TransactionController.*(..)) ||" +
             "execution(* com.inventory.service.inventory.InventoryService.*(..)) ||" +
             "execution(* com.inventory.service.transaction.TransactionService.*(..)) ||" +
-            "execution(* com.inventory.service.reservation.ReservationService.*(..)) "
+            "execution(* com.inventory.service.reservation.ReservationService.*(..)) ||"+
+            "execution(* com.inventory.service.redis.RedisService.*(..)) "
     )
     public void logMethodExecuted(JoinPoint jp) {
         LOGGER.info("{} Method Completed", jp.getSignature().getName());

@@ -5,8 +5,10 @@ import com.inventory.exception.ResourceNotFoundException;
 import com.inventory.model.InventoryTransaction;
 import com.inventory.model.ItemInventory;
 import com.inventory.repository.InventoryRepository;
+import com.inventory.service.redis.RedisService;
 import com.inventory.service.transaction.ITransactionService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.cache.CacheProperties;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -20,6 +22,7 @@ public class InventoryService implements IinventoryService{
 
     private final InventoryRepository inventoryRepository;
     private final ITransactionService transactionService;
+    private final RedisService redisService;
 
     @Override
     public List<ItemInventory> getAll(){
@@ -51,8 +54,14 @@ public class InventoryService implements IinventoryService{
         itemInventory.setProductTransactions(transactionList);
         itemInventory.setLastUpdate(LocalDateTime.now());
 
+        ItemInventory savedItemInventory = inventoryRepository.save(itemInventory);
 
-        return "OnHand Inventory Increased to "+inventoryRepository.save(itemInventory).getOnHand();
+        if(redisService.checkItemInventoryInRedis(productId)){
+            redisService.saveItemInventoryInRedis(savedItemInventory);}
+
+
+
+        return "OnHand Inventory Increased to "+savedItemInventory.getOnHand();
     }
 
     @Override
@@ -75,15 +84,25 @@ public class InventoryService implements IinventoryService{
         itemInventory.setProductTransactions(transactionList);
         itemInventory.setLastUpdate(LocalDateTime.now());
 
-        return inventoryRepository.save(itemInventory);
+        ItemInventory savedItemInventory = inventoryRepository.save(itemInventory);
 
+        if(redisService.checkItemInventoryInRedis(productId))
+            redisService.saveItemInventoryInRedis(savedItemInventory);
+
+        return savedItemInventory;
 
     }
 
     @Override
     public ItemInventory getInventory(Long productId) {
-        return inventoryRepository.findById(productId)
+
+        ItemInventory itemInventory = redisService.getItemInventoryFromRedis(productId);
+
+        if ( itemInventory == null) return inventoryRepository.findById(productId)
+                .map(redisService::saveItemInventoryInRedis)
                 .orElseThrow(()-> new ResourceNotFoundException("Product Was Not Found"));
+
+        return itemInventory;
     }
 
 
@@ -114,13 +133,21 @@ public class InventoryService implements IinventoryService{
         savedItemInventory.setProductTransactions(transactionList);
         savedItemInventory.setLastUpdate(LocalDateTime.now());
 
-        return inventoryRepository.save(savedItemInventory);
+        ItemInventory temp = inventoryRepository.save(savedItemInventory);
+
+        if(redisService.checkItemInventoryInRedis(productId))
+            redisService.saveItemInventoryInRedis(temp);
+
+        return temp;
     }
 
     @Override
     public String deleteProduct(Long productId){
 
         inventoryRepository.deleteById(productId);
+
+
+        redisService.deleteData(productId.toString());
 
         return productId+" Deleted Successfully";
     }

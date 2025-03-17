@@ -9,6 +9,7 @@ import com.inventory.model.OrderItem;
 import com.inventory.model.Reservation;
 import com.inventory.repository.ReservationRepository;
 import com.inventory.service.inventory.IinventoryService;
+import com.inventory.service.redis.RedisService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +22,7 @@ public class ReservationService implements IReservationService{
     private final ReservationRepository reservationRepository;
     private final IinventoryService inventoryService;
     private final OrderInterface orderInterface;
+    private final RedisService redisService;
 
     @Override
     public void createReservationForOrder(Long orderId) {
@@ -57,8 +59,14 @@ public class ReservationService implements IReservationService{
 
     @Override
     public Reservation getReservation(Long reservationId) {
-        return reservationRepository.findById(reservationId)
+
+        Reservation reservation = redisService.getReservationFromRedis(reservationId);
+
+        if(reservation == null) return reservationRepository.findById(reservationId)
+                                    .map(redisService::saveReservationInRedis)
                                     .orElseThrow(() -> new ResourceNotFoundException("Reservation Not Found"));
+
+        return reservation;
     }
 
     @Override

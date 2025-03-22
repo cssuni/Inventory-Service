@@ -2,13 +2,14 @@ package com.inventory.service.inventory;
 
 import com.inventory.enums.TransactionType;
 import com.inventory.exception.ResourceNotFoundException;
+import com.inventory.model.InventoryForCart;
 import com.inventory.model.InventoryTransaction;
 import com.inventory.model.ItemInventory;
 import com.inventory.repository.InventoryRepository;
 import com.inventory.service.redis.RedisService;
 import com.inventory.service.transaction.ITransactionService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.cache.CacheProperties;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -23,6 +24,7 @@ public class InventoryService implements IinventoryService{
     private final InventoryRepository inventoryRepository;
     private final ITransactionService transactionService;
     private final RedisService redisService;
+    private final ModelMapper modelMapper;
 
     @Override
     public List<ItemInventory> getAll(){
@@ -103,6 +105,19 @@ public class InventoryService implements IinventoryService{
                 .orElseThrow(()-> new ResourceNotFoundException("Product Was Not Found"));
 
         return itemInventory;
+    }
+
+    @Override
+    public InventoryForCart getInvForCart(Long productId){
+
+        ItemInventory itemInventory = getInventory(productId);
+
+        InventoryForCart inventory = modelMapper.map(itemInventory,InventoryForCart.class);
+
+        System.out.println(inventory);
+        System.out.println("inventory");
+
+        return inventory;
     }
 
 

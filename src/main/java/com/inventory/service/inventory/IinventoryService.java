@@ -1,5 +1,6 @@
 package com.inventory.service.inventory;
 
+import com.inventory.model.InventoryForCart;
 import com.inventory.model.InventoryTransaction;
 import com.inventory.model.ItemInventory;
 
@@ -12,7 +13,10 @@ public interface IinventoryService {
     public String increaseInventory(Long productId, Long Qty);
     public ItemInventory decreaseInventory(Long productId, Long Qty);
     public ItemInventory getInventory(Long productId);
-    public ItemInventory updateInventory(Long productId,Long totalQty);
+
+    InventoryForCart getInvForCart(Long productId);
+
+    public ItemInventory updateInventory(Long productId, Long totalQty);
 
 
     String deleteProduct(Long productId);

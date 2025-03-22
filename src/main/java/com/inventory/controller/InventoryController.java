@@ -2,10 +2,12 @@ package com.inventory.controller;
 
 
 import com.inventory.exception.ResourceNotFoundException;
+import com.inventory.model.InventoryForCart;
 import com.inventory.model.ItemInventory;
 import com.inventory.service.inventory.IinventoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,6 +31,16 @@ public class InventoryController {
             return ResponseEntity.ok(inventoryService.getInventory(productId));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(null);
+        }
+    }
+
+    @GetMapping("getForCart")
+    public InventoryForCart getInvForCart(@RequestParam Long productId){
+
+        try{
+            return inventoryService.getInvForCart(productId);
+        } catch (Exception e) {
+            return null;
         }
     }
 
